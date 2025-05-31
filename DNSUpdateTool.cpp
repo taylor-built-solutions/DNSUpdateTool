@@ -1,10 +1,8 @@
 #include <curlpp/Easy.hpp>
-#include <curlpp/HttpGet.hpp>
-#include <curlpp/HttpHeader.hpp>
-#include <curlpp/Url.hpp>
+#include <curlpp/Options.hpp>
 #include <curlpp/cURLpp.hpp>
 #include <iostream>
-#include <json/json.h>
+#include <nlohmann/json.hpp>
 #include <string>
 
 using namespace std;
@@ -12,11 +10,12 @@ using namespace curlpp;
 
 string getExternalIpAddress() {
   string ipAddress = "http://api.whatismyip.com";
-  Easy request;
-  request.setOpt(new Url(ipAddress));
-  request.setOpt(new HttpHeader("Authorization", "Bearer YOUR_API_TOKEN"));
+  curlpp::Easy request;
+  request.setOpt(new curlpp::options::Url(ipAddress));
+  request.setOpt(new curlpp::options::HttpHeader("Authorization",
+                                                 "Bearer YOUR_API_TOKEN"));
   request.setOpt(new HttpGet());
-  Easy *response = request.perform();
+  curlpp::Easy *response = request.perform();
   return response->getBody();
 }
 
@@ -43,9 +42,10 @@ void readConfigurationFile() {
 void createDnsRecord(string domainName, string ipAddress, bool isProxied,
                      int ttl) {
   // Set up the API request to create the DNS record
-  Easy request;
-  request.setOpt(new Url("https://api.cloudflare.com/client/v4/zones/" +
-                         domainName + "/dns_records"));
+  curlpp::Easy request;
+  request.setOpt(
+      new curlpp::options::Url("https://api.cloudflare.com/client/v4/zones/" +
+                               domainName + "/dns_records"));
   request.setOpt(new HttpHeader("Authorization", "Bearer YOUR_API_TOKEN"));
   request.setOpt(new HttpHeader("Content-Type", "application/json"));
   string jsonData = "{\"type\":\"A\",\"name\":\"" + domainName +
@@ -54,7 +54,7 @@ void createDnsRecord(string domainName, string ipAddress, bool isProxied,
   request.setOpt(new HttpPost(jsonData));
 
   // Make the API request and get the response
-  Easy *response = request.perform();
+  curlpp::Easy *response = request.perform();
 
   // Print the response to the console
   cout << response->getBody() << endl;
