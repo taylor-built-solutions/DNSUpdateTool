@@ -1,27 +1,25 @@
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-#include <curlpp/cURLpp.hpp>
+#include <cpr/cpr.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 using namespace std;
 using namespace curlpp;
 
 string getExternalIpAddress() {
-  string ipAddress = "http://api.whatismyip.com";
-  curlpp::Easy request;
-  request.setOpt(new curlpp::options::Url(ipAddress));
-  request.setOpt(new curlpp::options::HttpHeader("Authorization",
-                                                 "Bearer YOUR_API_TOKEN"));
-  request.setOpt(new HttpGet());
-  curlpp::Easy *response = request.perform();
-  return response->getBody();
+  cpr::Response response =
+      cpr::Get(cpr::Url{"https://api.ipify.org?format=json"});
+
+  nlohmann::json externalIPJson = nlohmann::json::parse(response.text);
+  std::string externalIP = externalIPJson["ip"];
+
+  return externalIP;
 }
 
 void readConfigurationFile() {
   // Load JSON configuration file
-  Json::Value config;
+  nlohmann::json config;
   ifstream jsonFile("config.json");
   string domainName, ipAddress, recordType;
   bool isProxied;
@@ -31,7 +29,7 @@ void readConfigurationFile() {
   jsonFile.close();
 
   // Get the necessary parameters from the configuration file
-  for (const auto &domain : config["domain"].asObject()) {
+  for (const auto &domain : config["domain"]) {
     domainName = domain.first;
     ipAddress = domain.second["ipAddress"].asString();
     isProxied = domain.second["isProxied"].asBool();

@@ -7,7 +7,7 @@ class DNSUpdateTool(ConanFile):
     generators = "CMakeDeps", "CMakeToolchain"
 
     def requirements(self):
-        self.requires("curlpp/0.8.1.cci.20240530")
+        self.requires("cpr/1.11.2")
         self.requires("nlohmann_json/3.12.0")
 
     def layout(self):
